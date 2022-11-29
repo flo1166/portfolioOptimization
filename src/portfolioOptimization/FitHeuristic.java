@@ -20,7 +20,7 @@ public class FitHeuristic {
 		covariances[3] = new Covariance("D", -0.5, 0.2, -0.2, 1);
 		
 		// calc portfolio
-		calcPortfolio(assets, covariances, 10000000);		
+		calcPortfolio(assets, covariances, 10000000, 0.52);		
 	}
 	
 	// this method is to generate weights for the portfolio
@@ -57,33 +57,25 @@ public class FitHeuristic {
 	public static double calcVariance(Asset[] assets, double[] weights, Covariance[] covariances) {
 		double sumVariance = 0;
 		double covarianceCombi = 0;
-		double standardDeviationOne = 0;
-		double standardDeviationTwo = 0;
 		
 		// go through all combination of assets
 		for(int i = 0; i < assets.length; i++) {
 			for(int j = 0 + i; j < assets.length; j++) {
 				if(i == j) {
-					standardDeviationOne = assets[i].getStandardDeviation();
-					sumVariance += weights[i] * weights[i] * standardDeviationOne * standardDeviationOne;
+					sumVariance += weights[i] * weights[i] * assets[i].getStandardDeviation() * assets[i].getStandardDeviation();
 				} else {
 					// choose covariance
+					covarianceCombi = covariances[i].getAssetD();
 					if(j == 0) {
 						covarianceCombi = covariances[i].getAssetA();
 					} else if (j == 1) {
 						covarianceCombi = covariances[i].getAssetB();
 					} else if (j == 2) {
 						covarianceCombi = covariances[i].getAssetC();
-					} else {
-						covarianceCombi = covariances[i].getAssetD();
-					}
-					
-					// store standard deviation
-					standardDeviationOne = assets[i].getStandardDeviation();
-					standardDeviationTwo = assets[j].getStandardDeviation();
+					} 
 					
 					// calculate variance of all combinations
-					sumVariance += (weights[i] * standardDeviationOne * weights[j] * standardDeviationTwo * covarianceCombi) * 2;
+					sumVariance += (weights[i] * assets[i].getStandardDeviation() * weights[j] * assets[j].getStandardDeviation() * covarianceCombi) * 2;
 				}
 			}
 		}
@@ -91,7 +83,7 @@ public class FitHeuristic {
 	}
 	
 	// this method calls calcReturn and calcVariance on a given portfolio weight
-	public static void calcPortfolio(Asset[] assets, Covariance[] covariances, double repetation) {
+	public static void calcPortfolio(Asset[] assets, Covariance[] covariances, double repetation, double maxVariance) {
 		// initialize variables
 		double expectedReturn = 0;
 		double expectedVariance = 0;
@@ -107,7 +99,7 @@ public class FitHeuristic {
 			expectedVariance = calcVariance(assets, weightsMethod, covariances);
 			
 			// if better portfolio found, save it in the fields
-			if(bestReturn < expectedReturn) {
+			if((bestReturn < expectedReturn) & (expectedVariance <= maxVariance)) {
 				bestReturn = expectedReturn;
 				bestPortfolio[0] = weightsMethod[0];
 				bestPortfolio[1] = weightsMethod[1];
@@ -119,6 +111,11 @@ public class FitHeuristic {
 			i++;
 		}	
 		// print statement
+		printPortfolio(bestPortfolio);
+}
+	
+	// method to print out results
+	public static void printPortfolio(double[] bestPortfolio) {
 		System.out.println("The best portfolio is:");
 		System.out.println("1. Weight: " + bestPortfolio[0] + ", 2. Weight: " + bestPortfolio[1] + ", 3. Weight: " + bestPortfolio[2] + ", 4. Weight: " + bestPortfolio[3]);
 		System.out.println("Expected Return: " + bestPortfolio[4] + ", Expected Variance: " + bestPortfolio[5]);
