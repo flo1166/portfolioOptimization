@@ -30,9 +30,4 @@ public class Asset {
 	public double getStandardDeviation() {
 		return standardDeviation;
 	}
-	
-	
-	
-	
-	
 }

@@ -13,15 +13,47 @@ public class FitHeuristic {
 		assets[3] = new Asset("D", 1.1, 0.5);
 		
 		// create the covariance
-		Covariance[] covariances = new Covariance[4];
-		covariances[0] = new Covariance("A", 1, -0.2, 0.8, -0.5);
-		covariances[1] = new Covariance("B", -0.2, 1, 0.4, 0.2);
-		covariances[2] = new Covariance("C", 0.8, 0.4, 1, -0.2);
-		covariances[3] = new Covariance("D", -0.5, 0.2, -0.2, 1);
+		Covariance[] covariances = new Covariance[4];		
+		covariances[0] = new Covariance("A", new double[] {1, -0.2, 0.8, -0.5});
+		covariances[1] = new Covariance("B", new double[] {-0.2, 1, 0.4, 0.2});
+		covariances[2] = new Covariance("C", new double[] {0.8, 0.4, 1, -0.2});
+		covariances[3] = new Covariance("D", new double[] {-0.5, 0.2, -0.2, 1});
 		
 		// calc portfolio
 		calcPortfolio(assets, covariances, 10000000, 0.52);		
 	}
+	
+	// this method calls calcReturn and calcVariance on a given portfolio weight
+	public static void calcPortfolio(Asset[] assets, Covariance[] covariances, double repetation, double maxVariance) {
+		// initialize variables
+		double expectedReturn = 0;
+		double expectedVariance = 0;
+		double bestReturn = 0;
+		double[] bestPortfolio = new double[6];
+		double[] weightsMethod = new double[4];
+		int i = 0;
+		
+		while(i <= repetation) {
+			// calculate return and variance of those assets
+			weightsMethod = generatePortfolioWeights();
+			expectedReturn = calcReturn(assets, weightsMethod);
+			expectedVariance = calcVariance(assets, weightsMethod, covariances);
+			
+			// if better portfolio found, save it in the fields
+			if((bestReturn < expectedReturn) & (expectedVariance <= maxVariance)) {
+				bestReturn = expectedReturn;
+				bestPortfolio[0] = weightsMethod[0];
+				bestPortfolio[1] = weightsMethod[1];
+				bestPortfolio[2] = weightsMethod[2];
+				bestPortfolio[3] = weightsMethod[3];
+				bestPortfolio[4] = expectedReturn;
+				bestPortfolio[5] = expectedVariance;
+			}
+			i++;
+		}	
+		// print statement
+		printPortfolio(bestPortfolio);
+}
 	
 	// this method is to generate weights for the portfolio
 	public static double[] generatePortfolioWeights() {
@@ -65,14 +97,7 @@ public class FitHeuristic {
 					sumVariance += weights[i] * weights[i] * assets[i].getStandardDeviation() * assets[i].getStandardDeviation();
 				} else {
 					// choose covariance
-					covarianceCombi = covariances[i].getAssetD();
-					if(j == 0) {
-						covarianceCombi = covariances[i].getAssetA();
-					} else if (j == 1) {
-						covarianceCombi = covariances[i].getAssetB();
-					} else if (j == 2) {
-						covarianceCombi = covariances[i].getAssetC();
-					} 
+					covarianceCombi = covariances[i].getcovarianceABCD()[j];
 					
 					// calculate variance of all combinations
 					sumVariance += (weights[i] * assets[i].getStandardDeviation() * weights[j] * assets[j].getStandardDeviation() * covarianceCombi) * 2;
@@ -82,42 +107,10 @@ public class FitHeuristic {
 		return sumVariance;
 	}
 	
-	// this method calls calcReturn and calcVariance on a given portfolio weight
-	public static void calcPortfolio(Asset[] assets, Covariance[] covariances, double repetation, double maxVariance) {
-		// initialize variables
-		double expectedReturn = 0;
-		double expectedVariance = 0;
-		double bestReturn = 0;
-		double[] bestPortfolio = new double[6];
-		double[] weightsMethod = new double[4];
-		int i = 0;
-		
-		while(i <= repetation) {
-			// calculate return and variance of those assets
-			weightsMethod = generatePortfolioWeights();
-			expectedReturn = calcReturn(assets, weightsMethod);
-			expectedVariance = calcVariance(assets, weightsMethod, covariances);
-			
-			// if better portfolio found, save it in the fields
-			if((bestReturn < expectedReturn) & (expectedVariance <= maxVariance)) {
-				bestReturn = expectedReturn;
-				bestPortfolio[0] = weightsMethod[0];
-				bestPortfolio[1] = weightsMethod[1];
-				bestPortfolio[2] = weightsMethod[2];
-				bestPortfolio[3] = weightsMethod[3];
-				bestPortfolio[4] = expectedReturn;
-				bestPortfolio[5] = expectedVariance;
-			}
-			i++;
-		}	
-		// print statement
-		printPortfolio(bestPortfolio);
-}
-	
 	// method to print out results
 	public static void printPortfolio(double[] bestPortfolio) {
 		System.out.println("The best portfolio is:");
-		System.out.println("1. Weight: " + bestPortfolio[0] + ", 2. Weight: " + bestPortfolio[1] + ", 3. Weight: " + bestPortfolio[2] + ", 4. Weight: " + bestPortfolio[3]);
+		System.out.println("Weight A: " + bestPortfolio[0] + ", Weight B: " + bestPortfolio[1] + ", Weight C: " + bestPortfolio[2] + ", Weight D: " + bestPortfolio[3]);
 		System.out.println("Expected Return: " + bestPortfolio[4] + ", Expected Variance: " + bestPortfolio[5]);
 	}
 }
