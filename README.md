@@ -4,4 +4,4 @@ This code helps to perform a monte-carlo simulation. The simulation is famous in
 + Covariance = saves the covariance for each asset
 + FitHeuristic = to calculate the portfolio return and variance and perform through a given repetation number to get best performing once of all performed portfolio weight combinations
 
-Credits for the solution during lecture are given to Andreas Popp (Lecturer @ WFI) and Andre Konersmann
+Credits for the solution during lecture are given to Andreas Popp (Lecturer @ WFI) and @Andre Koners
